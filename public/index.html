@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>docx2pdf</title>
+        <link rel="stylesheet" href="/index.css">
+</head>
+
+<body>
+        <div class="container">
+            <div class="card">
+                <h1 class="heading">DOCX → PDF</h1>
+                <p class="sub">Selecciona un archivo .docx y lo convertimos a PDF en el servidor. La descarga se iniciará automáticamente.</p>
+
+                <div class="uploader">
+                    <input class="file-input" type="file" name="file" id="file" accept=".docx">
+                    <button id="choose" class="btn">Seleccionar</button>
+                </div>
+
+                <div id="status" class="status"></div>
+                <div class="footer">Conversión sencilla — usando la librería local <span style="font-family:monospace">docx2pdf-converter</span></div>
+            </div>
+        </div>
+
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"
+        integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+"
+        crossorigin="anonymous"></script>
+    <script>
+    const socket = io();
+    const archivo = document.getElementById("file");
+    const choose = document.getElementById('choose');
+    const status = document.getElementById("status");
+
+    // Proxy the visible button to the hidden file input
+    choose.addEventListener('click', () => archivo.click());
+
+        archivo.addEventListener('change', async function (event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) {
+                status.textContent = '';
+                return;
+            }
+            try {
+                status.innerHTML = `Leyendo <span class="filename">${file.name}</span>`;
+                const arrayBuffer = await fileToArrayBuffer(file);
+                // enviar como Uint8Array (file[0] en servidor será ese buffer)
+                status.innerHTML = `Enviando <span class="filename">${file.name}</span>`;
+                choose.disabled = true;
+                archivo.disabled = true;
+                const spinner = document.createElement('span'); spinner.className='spinner'; status.appendChild(spinner);
+                socket.emit('upload', [new Uint8Array(arrayBuffer), socket.id]);
+                status.appendChild(document.createTextNode(' Esperando conversión...'));
+            } catch (err) {
+                console.error('Error leyendo el archivo:', err);
+                status.textContent = 'Error leyendo el archivo';
+            }
+        });
+
+        // Recepción del PDF convertido (binario)
+        socket.on('converted', (data) => {
+            try {
+                status.textContent = 'Recibiendo PDF convertido...';
+                let blob;
+
+                if (data instanceof Blob) {
+                    blob = data;
+                } else if (data instanceof ArrayBuffer) {
+                    blob = new Blob([data], { type: 'application/pdf' });
+                } else if (ArrayBuffer.isView(data)) { // Uint8Array, etc.
+                    blob = new Blob([data.buffer], { type: 'application/pdf' });
+                } else {
+                    // fallback: try to construct from raw value
+                    blob = new Blob([data], { type: 'application/pdf' });
+                }
+
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                // use original filename if available
+                const filename = (socket && socket.id) ? 'converted.pdf' : 'converted.pdf';
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+                status.textContent = 'Conversión completa. Descarga iniciada.';
+                choose.disabled = false;
+                archivo.disabled = false;
+            } catch (e) {
+                console.error('Error al procesar PDF recibido:', e);
+                status.textContent = 'Error al procesar PDF recibido';
+                choose.disabled = false;
+                archivo.disabled = false;
+            }
+        });
+
+        socket.on('error', (msg) => {
+            console.error('Server error:', msg);
+            status.textContent = `Error del servidor: ${msg}`;
+        });
+
+        function fileToArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+    </script>
+</body>
+
+</html>
