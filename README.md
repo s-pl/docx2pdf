@@ -186,19 +186,3 @@ docx2pdf/
 
 ---
 
-## 11) Próximos pasos recomendados
-
-1. Agregar escaneo antivirus antes de encolar.
-2. Externalizar conversiones a un pool de workers o servicios (p. ej. microservicio con cola Redis + Bull para resiliencia).
-3. Añadir autenticación/autorization y límites por usuario/IP.
-4. Monitorización: exportar métricas (duración por job, errores, cola) y alertas.
-5. Tests E2E y CI que validen conversiones en un runner que tenga LibreOffice/Office instalado.
-
----
-
-Si quieres, puedo:
-- añadir un README en `docx2pdf-converter/` con instrucciones específicas para crear `convert.ps1` y `convert.sh`;
-- crear un script para comprobar dependencias (unoconv/powershell/etc.);
-- añadir una integración simple con ClamAV para escanear archivos antes de encolarlos.
-
-Dime cuál prefieres y lo implemento.
