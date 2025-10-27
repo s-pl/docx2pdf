@@ -61,22 +61,16 @@ Nota: los scripts `convert.ps1` y `convert.sh` no están incluidos automáticame
 
 ## 3) Instalación y ejecución
 
-1. Clona o copia el proyecto en tu máquina. Sitúate en la carpeta del proyecto:
-
-```powershell
-cd C:\Users\samue\Desktop\docx2pdf
-```
-
-2. Instala dependencias Node:
+1. Instala dependencias Node:
 
 ```powershell
 npm install
 npm install adm-zip --save
 ```
 
-3. Asegúrate de que las utilidades de conversión por plataforma están disponibles y que los scripts `docx2pdf-converter/convert.ps1` y/o `convert.sh` existen y son ejecutables.
+2. Asegúrate de que las utilidades de conversión por plataforma están disponibles y que los scripts `docx2pdf-converter/convert.ps1` y/o `convert.sh` existen y son ejecutables.
 
-4. Ejecuta el servidor (PowerShell):
+3. Ejecuta el servidor (PowerShell):
 
 ```powershell
 node index.js
@@ -84,7 +78,7 @@ node index.js
 npx nodemon index.js
 ```
 
-5. Abre en el navegador: `http://localhost:3000` y sube un `.docx`.
+4. Abre en el navegador: `http://localhost:3000` y sube un `.docx`.
 
 ---
 
@@ -185,4 +179,5 @@ docx2pdf/
 ```
 
 ---
+
 
